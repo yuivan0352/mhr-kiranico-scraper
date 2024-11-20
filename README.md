@@ -6,3 +6,5 @@
   <li>Requests: for calling HTML requests from the website</li>
   <li>Beautiful Soup 4: for processing the HTML to extract data from</li>
 </ul>
+
+<p>Data soon to be used in my <a href="https://github.com/yuivan0352/mhrise-wiki-search">Monster Hunter Rise Wiki Search Project</a></p>
