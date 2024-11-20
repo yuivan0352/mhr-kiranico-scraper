@@ -1,17 +1,19 @@
 import requests
+import json
 import sys
 from bs4 import BeautifulSoup
 
-def scrapePage():
-    URL = "https://mhrise.kiranico.com/"
+def scrapePage(url):
+    URL = url
     page = requests.get(URL)
     page = page.text.encode('ascii', 'ignore').decode('ascii')
 
     soup = BeautifulSoup(page, "html.parser")
     return soup
 
-currentPage = scrapePage()
+currentPage = scrapePage("https://mhrise.kiranico.com/")
 
+#Scraping Home Page
 links = {}
 linkKeywords = {"armors?", "weapons?", "material", "view=lg", "view=event", "view=hub_high", "view=hub_low", "view=hub_master", "view=mystery"}
 
@@ -22,8 +24,144 @@ for link in currentPage.find_all('a'):
             if (linkString.find(word) != -1):
                 links.setdefault(link.get_text(), link.get('href'))
 
-links = sorted(links.items(), key=lambda item: item[1])
+links = dict(sorted(links.items(), key=lambda item: item[1]))
 
-for link in links:
-    print(link)
+#Scraping Armor Pages
+# armorLinks = []
+# armors = []
+# armorPieces = set()
 
+# for link in links.values():
+#     if (link.find("armor") != -1):
+#         armorLinks.append(link)
+
+# i = 0
+# for link in armorLinks:
+#     currentPage = scrapePage(link)
+#     armorType = 0
+#     armorSet = ""
+
+#     for armor in currentPage.table.find_all('a'):
+#         currentArmor = {}
+#         currentArmor.update({"id": i})
+#         if (armor.get('href').find("skills") == -1):
+#             currentArmorSet = ""
+#             currentPage = scrapePage(armor.get('href'))
+#             if currentPage.h1.get_text("", True) in armorPieces:
+#                 continue
+#             else:
+#                 armorPieces.add(currentPage.h1.get_text("", True))
+#             currentArmor.update({"name": currentPage.h1.get_text("", True)})
+#             for j in range(len(currentArmor.get("name"))):
+#                 if (currentArmor.get("name")[j] != " "):
+#                     currentArmorSet += currentArmor.get("name")[j]
+#                 else: break
+#             if (currentArmorSet != armorSet or not armorSet): 
+#                 armorType = 0
+#                 armorSet = currentArmorSet
+#             match armorType:
+#                 case 0:
+#                     currentArmor.update({"type": "head"})
+#                 case 1:
+#                     currentArmor.update({"type": "chest"})
+#                 case 2:
+#                     currentArmor.update({"type": "arms"})
+#                 case 3:
+#                     currentArmor.update({"type": "waist"})
+#                 case 4:
+#                     currentArmor.update({"type": "legs"})
+#             armorType += 1
+#             materials = {}
+#             for mats in currentPage.find_all('table')[1].find_all('a'):
+#                 materials.update({mats.get_text(): mats.parent.next_sibling.next_sibling.text})
+#             currentArmor.update({"materials": materials})
+#             armors.append(currentArmor)
+#             i += 1
+
+# with open("armors.json", "w") as writeFile:
+#     json.dump(armors, writeFile)
+
+#Scraping Weapon Pages
+# weaponLinks = []
+# weaponDict = {}
+# weapons = []
+
+# for link in links.values():
+#     if (link.find("weapons") != -1):
+#         weaponLinks.append(link)
+
+# for link in weaponLinks:
+#     weaponNum = ""
+#     for i in reversed(range(len(link))):
+#         if (link[i].isdigit()):
+#             weaponNum = link[i] + weaponNum
+#         else:
+#             break    
+#     weaponNum = int(weaponNum)
+#     weaponDict.setdefault(weaponNum, link)
+
+# weaponDict = dict(sorted(weaponDict.items()))
+
+# i = 0
+# for weaponNum in weaponDict:
+#     currentPage = scrapePage(weaponDict.get(weaponNum))
+#     for weapon in currentPage.table.find_all('a'):
+#         currentWeapon = {}
+#         currentWeapon.update({"id": i})
+#         currentPage = scrapePage(weapon.get('href'))
+#         currentWeapon.update({"name": currentPage.h1.get_text("", True)})
+#         match weaponNum:
+#             case 0:
+#                 currentWeapon.update({"type": "Great Sword"})
+#             case 1:
+#                 currentWeapon.update({"type": "Sword & Shield"})
+#             case 2:
+#                 currentWeapon.update({"type": "Dual Blades"})
+#             case 3:
+#                 currentWeapon.update({"type": "Long Sword"})
+#             case 4:
+#                 currentWeapon.update({"type": "Hammer"})
+#             case 5:
+#                 currentWeapon.update({"type": "Hunting Horn"})
+#             case 6:
+#                 currentWeapon.update({"type": "Lance"})
+#             case 7:
+#                 currentWeapon.update({"type": "Gunlance"})
+#             case 8:
+#                 currentWeapon.update({"type": "Switch Axe"})
+#             case 9:
+#                 currentWeapon.update({"type": "Charge Blade"})
+#             case 10:
+#                 currentWeapon.update({"type": "Insect Glaive"})
+#             case 11:
+#                 currentWeapon.update({"type": "Bow"})
+#             case 12:
+#                 currentWeapon.update({"type": "Heavy Bowgun"})
+#             case 13:
+#                 currentWeapon.update({"type": "Light Bowgun"})
+#         forgingMats = {}
+#         upgradeMats = {}
+#         if (weaponNum != 12 and weaponNum != 13):
+#             for mats in currentPage.find_all('table')[1].find_all('a'):
+#                 forgingMats.update({mats.get_text(): mats.parent.next_sibling.next_sibling.text})
+#             for mats in currentPage.find_all('table')[2].find_all('a'):
+#                 upgradeMats.update({mats.get_text(): mats.parent.next_sibling.next_sibling.text})
+#         else:
+#             for mats in currentPage.find_all('table')[6].find_all('a'):
+#                 forgingMats.update({mats.get_text(): mats.parent.next_sibling.next_sibling.text})
+#             for mats in currentPage.find_all('table')[7].find_all('a'):
+#                 upgradeMats.update({mats.get_text(): mats.parent.next_sibling.next_sibling.text})
+#         currentWeapon.update({"forgingMats": forgingMats})
+#         currentWeapon.update({"upgradeMats": upgradeMats})
+#         weapons.append(currentWeapon)
+#         print(currentWeapon)
+#         i += 1
+
+# with open("weapons.json", "w") as writeFile:
+#     json.dump(weapons, writeFile)
+
+#Scraping Material Pages
+materialLinks = []
+materials = []
+
+currentPage = scrapePage(links.get("Materials"))
